@@ -1,0 +1,41 @@
+%{
+    /* Definition section */
+    #include <stdio.h>
+    int positive_numbers = 0;
+    int negative_numbers = 0;
+    int positive_fractions = 0;
+    int negative_fractions = 0;
+%}
+
+/* Rule Section */
+DIGIT [0-9]
+
+%%
+\+?{DIGIT}+              { positive_numbers++; }
+-{DIGIT}+                { negative_numbers++; }
+\+?{DIGIT}*\.{DIGIT}+    { positive_fractions++; }
+-{DIGIT}*\.{DIGIT}+      { negative_fractions++; }
+.                        { /* ignore other characters */ }
+%%
+
+int yywrap() {
+    return 1;
+}
+
+// driver code
+int main() {
+    printf("Enter the numbers (positive, negative, fractions): ");
+    yylex();
+    printf("\nNo. of positive numbers: %d", positive_numbers);
+    printf("\nNo. of negative numbers: %d", negative_numbers);
+    printf("\nNo. of positive fractions: %d", positive_fractions);
+    printf("\nNo. of negative fractions: %d\n", negative_fractions);
+    return 0;
+}
+
+
+
+
+flex number_count.l
+gcc lex.yy.c -o number_count -lfl
+./number_count
