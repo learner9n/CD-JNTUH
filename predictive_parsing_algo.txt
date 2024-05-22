@@ -1,0 +1,174 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_TERMS 10
+#define MAX_NONTERMS 10
+#define MAX_TABLE_ENTRIES 100
+
+char table[MAX_NONTERMS][MAX_TERMS][MAX_TABLE_ENTRIES], nter[MAX_NONTERMS], ter[MAX_TERMS];
+char inp[20], stack[20];
+
+int nut, nun, i = 0, top = 0;
+
+int get_nter(char);
+int get_ter(char);
+void replace(char, char);
+
+int main() {
+    int i, j;
+    printf("Enter number of Terminals:\n");
+    scanf("%d", &nut);
+    printf("Enter number of Non-Terminals:\n");
+    scanf("%d", &nun);
+    printf("Enter all Non-Terminals:\n");
+    scanf("%s", nter);
+    printf("Enter all Terminals:\n");
+    scanf("%s", ter);
+
+    for (i = 0; i < nut; i++)
+        printf("%c\t", ter[i]);
+    printf("\n");
+    for (j = 0; j < nun; j++)
+        printf("%c\t", nter[j]);
+    printf("\n");
+
+    for (i = 0; i < nun; i++)
+        for (j = 0; j < nut; j++) {
+            printf("Enter for %c and %c \n", nter[i], ter[j]);
+            scanf("%s", table[i][j]);
+        }
+
+    for (j = 0; j < nut; j++)
+        printf("\t %c", ter[j]);
+    printf("\n");
+    for (i = 0; i < nun; i++) {
+        printf("%c", nter[i]);
+        for (j = 0; j < nut; j++) {
+            printf("\t %s", table[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("Enter the string to parse:\n");
+    scanf("%s", inp);
+
+    stack[top++] = '$';
+    stack[top++] = nter[0];
+    i = 0;
+
+    while(1) {
+        if ((stack[top - 1] == '$') && (inp[i] == '$')) {
+            printf("String Accepted\n");
+            return 0;
+        } else if (!isupper(stack[top - 1])) {
+            if (stack[top - 1] == inp[i]) {
+                i++;
+                top--;
+            } else {
+                printf("Error not accepted\n");
+                return 1;
+            }
+        } else {
+            replace(stack[top - 1], inp[i]);
+        }
+    }
+}
+
+int get_nter(char x) {
+    int a;
+    for (a = 0; a < nun; a++)
+        if (x == nter[a])
+            return a;
+    return -1;
+}
+
+int get_ter(char x) {
+    int a;
+    for (a = 0; a < nut; a++)
+        if (x == ter[a])
+            return a;
+    return -1;
+}
+
+void replace(char NT, char T) {
+    int in1, it1, len;
+    char str[MAX_TABLE_ENTRIES];
+    in1 = get_nter(NT);
+    it1 = get_ter(T);
+    if ((in1 != -1) && (it1 != -1)) {
+        strcpy(str, table[in1][it1]);
+        if(strcmp(str, "#") == 0) {
+            printf("Error\n");
+            exit(0);
+        }
+        if (strcmp(str, "@") == 0)
+            top--;
+        else {
+            top--;
+            len = strlen(str);
+            len--;
+            do {
+                stack[top++] = str[len--];
+            } while (len >= 0);
+        }
+    } else {
+        printf("Not Valid\n");
+        exit(0);
+    }
+}
+
+
+
+
+
+OUTPUT:
+Enter number of Terminals:
+5
+Enter number of Non-Terminals:
+3
+Enter all Non-Terminals:
+SBC
+Enter all Terminals:
+abcd$
+a b c d $
+S B C
+Enter for S and a
+Bb
+Enter for S and b
+Bb
+Enter for S and c
+Cd
+Enter for S and d
+Cd
+Enter for S and $
+#
+Enter for B and a
+aB
+Enter for B and b
+@
+Enter for B and c
+#
+Enter for B and d
+#
+Enter for B and $
+#
+Enter for C and a
+#
+Enter for C and b
+#
+Enter for C and c
+cC
+Enter for C and d
+@
+Enter for C and $
+#
+a b c d $
+S Bb Bb Cd Cd #
+B aB @ # # #
+C # # cC @ #
+Enter the string to parse:
+ab$
+String Accepted
+
