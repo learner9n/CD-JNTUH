@@ -1,0 +1,36 @@
+%{
+#include <stdio.h>
+int vow_count = 0;
+int const_count = 0;
+%}
+
+%%
+
+[aA] { vow_count++; }
+[eE] { vow_count++; }
+[iI] { vow_count++; }
+[oO] { vow_count++; }
+[uU] { vow_count++; }
+[b-df-hj-np-tv-zB-DF-HJ-NP-TV-Z] { const_count++; }
+
+%%
+
+int yywrap() {
+    return 1;
+}
+
+int main() {
+    printf("Enter the string of vowels and consonants: ");
+    yylex();
+    printf("Number of vowels: %d\n", vow_count);
+    printf("Number of consonants: %d\n", const_count);
+    return 0;
+}
+
+
+
+
+
+flex vowel_consonant_count.l
+gcc lex.yy.c -o vowel_consonant_count -lfl
+./vowel_consonant_count
