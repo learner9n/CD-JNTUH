@@ -1,0 +1,99 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <regex.h>
+
+// Function to match string with given regular expression
+int match_regex(const char *string, const char *pattern) {
+    regex_t regex;
+    int result;
+    
+    // Compile the regular expression
+    result = regcomp(&regex, pattern, REG_EXTENDED);
+    if (result) {
+        fprintf(stderr, "Could not compile regex\n");
+        return 0;
+    }
+    
+    // Execute the regular expression
+    result = regexec(&regex, string, 0, NULL, 0);
+    
+    // Free the compiled regular expression
+    regfree(&regex);
+    
+    if (!result) {
+        return 1;  // Match found
+    } else if (result == REG_NOMATCH) {
+        return 0;  // No match
+    } else {
+        char msgbuf[100];
+        regerror(result, &regex, msgbuf, sizeof(msgbuf));
+        fprintf(stderr, "Regex match failed: %s\n", msgbuf);
+        return 0;
+    }
+}
+
+int main() {
+    char string[100];
+    char pattern[100];
+    
+    printf("Enter the string to be matched: ");
+    fgets(string, sizeof(string), stdin);
+    // Remove trailing newline character
+    string[strcspn(string, "\n")] = 0;
+    
+    printf("Enter the regular expression: ");
+    fgets(pattern, sizeof(pattern), stdin);
+    // Remove trailing newline character
+    pattern[strcspn(pattern, "\n")] = 0;
+    
+    if (match_regex(string, pattern)) {
+        printf("The string matches the regular expression.\n");
+    } else {
+        printf("The string does not match the regular expression.\n");
+    }
+    
+    return 0;
+}
+
+
+How to Compile and Execute the Program on Linux
+Open a Terminal:
+Open a terminal on your Linux machine.
+
+Navigate to the Directory:
+Navigate to the directory where you saved regex_match.c. You can use the cd command to change directories:
+
+sh
+
+cd /path/to/your/directory
+Compile the Program:
+Use the gcc compiler to compile the C program. The -o flag specifies the output file name:
+
+sh
+Copy code
+gcc -o regex_match regex_match.c -lregex
+Run the Program:
+Execute the compiled program using the following command:
+
+sh
+Copy code
+./regex_match
+Example Usage
+After running the program, you will be prompted to enter a string and a regular expression. Here is an example interaction:
+
+vbnet
+Copy code
+Enter the string to be matched: hello123
+Enter the regular expression: [a-z]+[0-9]+
+The string matches the regular expression.
+Notes
+Ensure you have gcc installed on your Linux system. If not, you can install it using your package manager, for example:
+
+sh
+Copy code
+sudo apt-get install gcc   # For Debian-based systems
+sudo yum install gcc       # For Red Hat-based systems
+The regex.h library is part of the GNU C Library, which should be available by default on most Linux distributions.
+
+This guide should help you compile and run the C program for regular expression matching on a Linux system.
