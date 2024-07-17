@@ -1,0 +1,52 @@
+18. Creation of YACC (Parser Generator) source programs
+%{
+#include <stdio.h>
+#include "y.tab.h"
+%}
+
+%token NUMBER
+
+%left '+' '-'
+%left '*' '/'
+
+%%
+
+ArithmeticExpression: E {
+    printf("Result = %d\n", $1);
+}
+;
+
+E: E '+' E { $$ = $1 + $3; }
+ | E '-' E { $$ = $1 - $3; }
+ | E '*' E { $$ = $1 * $3; }
+ | E '/' E { $$ = $1 / $3; }
+ | '(' E ')' { $$ = $2; }
+ | NUMBER { $$ = $1; }
+ ;
+
+%%
+
+void yyerror(const char *msg);
+
+int main() {
+    printf("Enter an arithmetic expression: ");
+    yyparse();
+    return 0;
+}
+
+void yyerror(const char *msg) {
+    fprintf(stderr, "done");
+}
+
+
+
+TO EXECUTE:
+vim parser.y
+yacc -d parser.y
+cc lex.yy.c y.tab.c -ll
+./a.out
+output:
+Enter an arithmetic expression:
+1+2
+Result=3
+done
