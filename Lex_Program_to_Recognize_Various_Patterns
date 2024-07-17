@@ -1,0 +1,83 @@
+Lex Program to Recognize Various Patterns
+Save the following code in a file named patterns.l:
+
+%{
+#include <stdio.h>
+%}
+
+/* Definitions section: list of regular expressions */
+DIGIT      [0-9]
+LETTER     [a-zA-Z]
+ALPHANUM   [a-zA-Z0-9]
+
+%%
+
+/* Rules section: action to perform when a pattern is matched */
+hello           { printf("Hello pattern matched\n"); }
+[0-9]+          { printf("Number matched: %s\n", yytext); }
+[a-zA-Z]+       { printf("Word matched: %s\n", yytext); }
+[0-9]{4}        { printf("Four-digit number matched: %s\n", yytext); }
+[A-Z][a-z]+     { printf("Capitalized word matched: %s\n", yytext); }
+[0-9]{3}-[0-9]{2}-[0-9]{4} { printf("SSN pattern matched: %s\n", yytext); }
+.               { printf("Unknown pattern: %s\n", yytext); }
+
+%%
+
+int main(int argc, char **argv) {
+    yylex();
+    return 0;
+}
+
+int yywrap() {
+    return 1;
+}
+
+
+
+
+How to Compile and Execute the Lex Program on Linux
+Install Flex:
+If you don't have Flex installed, you can install it using your package manager. For example:
+
+sudo apt-get install flex   # For Debian-based systems
+sudo yum install flex       # For Red Hat-based systems
+Save the Lex File:
+Save the above code in a file named patterns.l.
+
+Generate the C Source Code:
+Use Flex to generate the C source code from the Lex file:
+
+flex patterns.l
+
+This will create a file named lex.yy.c.
+
+Compile the Generated C Code:
+Compile the lex.yy.c file using gcc:
+
+gcc -o patterns lex.yy.c -lfl
+Run the Program:
+Execute the compiled program:
+
+./patterns
+Example Usage
+After running the program, you can input various strings to see which patterns are matched. Here is an example interaction:
+
+hello
+Hello pattern matched
+1234
+Number matched: 1234
+abcd
+Word matched: abcd
+5678
+Four-digit number matched: 5678
+John
+Capitalized word matched: John
+123-45-6789
+SSN pattern matched: 123-45-6789
+!
+Unknown pattern: !
+Explanation of the Lex Program
+Definitions Section: This section contains definitions of patterns using regular expressions.
+Rules Section: Each pattern is associated with an action, which is executed when the pattern is matched. yytext is a global variable containing the matched text.
+User Code Section: This contains the main function to start the lexical analysis and yywrap function which indicates the end of input.
+This Lex program is a simple yet effective way to recognize various patterns in text using lexical analysis.
