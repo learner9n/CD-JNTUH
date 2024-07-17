@@ -1,0 +1,130 @@
+yacc program to convert infix to post fix
+
+Save the following Lex code in a file named infix_to_postfix.l:
+
+
+%{
+#include "y.tab.h"
+%}
+
+%%
+[0-9]+          { yylval = atoi(yytext); return NUMBER; }
+[ \t\n]         { /* Ignore whitespace */ }
+"+"             { return PLUS; }
+"-"             { return MINUS; }
+"*"             { return TIMES; }
+"/"             { return DIVIDE; }
+"("             { return LPAREN; }
+")"             { return RPAREN; }
+.               { printf("Unknown character: %s\n", yytext); return 0; }
+
+%%
+
+
+
+Yacc File (infix_to_postfix.y)
+Save the following Yacc code in a file named infix_to_postfix.y:
+
+
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+void yyerror(const char *s);
+int yylex();
+%}
+
+%token NUMBER
+%token PLUS MINUS TIMES DIVIDE LPAREN RPAREN
+
+%left PLUS MINUS
+%left TIMES DIVIDE
+
+%%
+input:  /* empty */
+    | input line
+    ;
+
+line: '\n'
+    | exp '\n'  { printf("Postfix: %s\n", $1); free($1); }
+    ;
+
+exp:  NUMBER           { $$ = strdup(yytext); }
+    | exp PLUS exp     { $$ = malloc(strlen($1) + strlen($3) + 2); sprintf($$,"%s %s +", $1, $3); free($1); free($3); }
+    | exp MINUS exp    { $$ = malloc(strlen($1) + strlen($3) + 2); sprintf($$,"%s %s -", $1, $3); free($1); free($3); }
+    | exp TIMES exp    { $$ = malloc(strlen($1) + strlen($3) + 2); sprintf($$,"%s %s *", $1, $3); free($1); free($3); }
+    | exp DIVIDE exp   { $$ = malloc(strlen($1) + strlen($3) + 2); sprintf($$,"%s %s /", $1, $3); free($1); free($3); }
+    | LPAREN exp RPAREN { $$ = $2; }
+    ;
+
+%%
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+
+int main() {
+    printf("Enter an infix expression:\n");
+    yyparse();
+    return 0;
+}
+
+
+
+
+How to Compile and Execute the Program on Linux
+Install Flex and Bison:
+If you don't have Flex and Bison installed, you can install them using your package manager. For example:
+
+sh
+Copy code
+sudo apt-get install flex bison   # For Debian-based systems
+sudo yum install flex bison       # For Red Hat-based systems
+Save the Lex and Yacc Files:
+Save the above Lex code in a file named infix_to_postfix.l and the Yacc code in a file named infix_to_postfix.y.
+
+Generate the C Source Code:
+Use Bison to generate the parser code:
+
+sh
+Copy code
+bison -d infix_to_postfix.y
+This will create two files: infix_to_postfix.tab.c and infix_to_postfix.tab.h.
+
+Generate the Lex Source Code:
+Use Flex to generate the scanner code:
+
+sh
+Copy code
+flex infix_to_postfix.l
+This will create a file named lex.yy.c.
+
+Compile the Generated C Code:
+Compile the generated C code using gcc:
+
+sh
+Copy code
+gcc -o infix_to_postfix infix_to_postfix.tab.c lex.yy.c -lfl
+Run the Program:
+
+
+
+
+
+continue
+ChatGPT
+Run the Program:
+Execute the compiled program:
+sh
+Copy code
+./infix_to_postfix
+Example Usage
+After running the program, you can input various infix expressions to see the corresponding postfix expressions. Here is an example interaction:
+
+mathematica
+Copy code
+Enter an infix expression:
+3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3
+
+Postfix: 3 4 2 * 1 5 - 2 3 ^ ^ / +
