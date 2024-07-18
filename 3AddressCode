@@ -1,0 +1,140 @@
+sudo apt-get update
+sudo apt-get install flex bison
+
+lexer.l
+
+
+%{
+#include "parser.tab.h"
+%}
+
+%%
+
+[0-9]+  { yylval.ival = atoi(yytext); return NUMBER; }
+[ \t]   ;
+\n      { return EOL; }
+.       { return yytext[0]; }
+
+%%
+
+int yywrap(void) {
+    return 1;
+}
+
+
+parser.y
+
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void yyerror(const char *s);
+int yylex(void);
+
+int temp_count = 0;
+char tac_code[100][50];
+int tac_index = 0;
+
+void add_TAC(const char* code) {
+    strcpy(tac_code[tac_index++], code);
+}
+
+char* new_temp() {
+    char *temp = (char*)malloc(5);
+    sprintf(temp, "t%d", temp_count++);
+    return temp;
+}
+
+%}
+
+%union {
+    int ival;
+    char *sval;
+}
+
+%token <ival> NUMBER
+%token EOL
+
+%left '+' '-'
+%left '*' '/'
+
+%%
+
+input:
+    /* empty */
+    | input line
+    ;
+
+line:
+    '\n'
+    | exp '\n'  { printf("Result: %s\n", $1); }
+    ;
+
+exp:
+    NUMBER
+    | exp '+' exp  { 
+        char *temp = new_temp();
+        char code[50];
+        sprintf(code, "%s = %s + %s", temp, $1, $3);
+        add_TAC(code);
+        $$ = temp;
+      }
+    | exp '-' exp  { 
+        char *temp = new_temp();
+        char code[50];
+        sprintf(code, "%s = %s - %s", temp, $1, $3);
+        add_TAC(code);
+        $$ = temp;
+      }
+    | exp '*' exp  { 
+        char *temp = new_temp();
+        char code[50];
+        sprintf(code, "%s = %s * %s", temp, $1, $3);
+        add_TAC(code);
+        $$ = temp;
+      }
+    | exp '/' exp  { 
+        char *temp = new_temp();
+        char code[50];
+        sprintf(code, "%s = %s / %s", temp, $1, $3);
+        add_TAC(code);
+        $$ = temp;
+      }
+    | '(' exp ')'  { $$ = $2; }
+    ;
+
+%%
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+}
+
+int main(void) {
+    yyparse();
+    printf("Three Address Code:\n");
+    for (int i = 0; i < tac_index; i++) {
+        printf("%s\n", tac_code[i]);
+    }
+    return 0;
+}
+
+
+
+bison -d parser.y
+flex lexer.l
+gcc -o parser parser.tab.c lex.yy.c -lfl
+
+
+
+./parser
+
+
+3 + 4 * 5\n
+
+Result: t2
+Three Address Code:
+t0 = 4 * 5
+t1 = 3 + t0
+
